@@ -6,7 +6,7 @@ class Pokemon:
         self.max_health = (self.level*10)
         self.current_health = self.max_health
         self.knocked_out = False
-        
+        self.experience = 0
     
     def __repr__(self):
         return f"{self.name} is a level {self.level} {self.type} Pokémon. Health: {self.current_health}/{self.max_health}."
@@ -90,14 +90,70 @@ class Pokemon:
             damage = self.level * 2 + booster
             damage_type = self.type
             print(f"{self.name} attacks {other.name}!")
-            other.take_hit(damage, damage_type)    
+            other.take_hit(damage, damage_type)
+            
+            if other.knocked_out:
+              self.level_up()
+             
             
         elif other.knocked_out:
             print(f"{other.name} is already knocked out and cannot be attacked!")
         
         else:
             print(f"{self.name} is knocked out and cannot attack!")
-            
+
+    def level_up(self):
+        self.experience += 10
+        if self.experience >= 10:
+            self.level += 1
+            self.max_health = self.level*10
+            self.current_health += self.current_health * 0.5
+            print(f'{self.name} has levelled up! New level: {self.level}')
+        elif self.experience >= 20:
+            self.level += 1
+
+
+class Trainer:
+    def __init__(self, name, pokemon_list, potions):
+        self.name = name
+        self.pokemon = pokemon_list
+        self.potions = potions
+        self.active_pokemon = self.pokemon[0]
+
+    # returns a list of pokemon
+
+    def see_pokemon(self):
+        inventory = []
+        for pokemon in self.pokemon:
+            inventory.append(pokemon.name)
+        return inventory
+        
+    # takes an object as input, checks if that pokemon is in the inventory and switches it to the active pokemon    
+
+    def switch_active(self, other):
+        if other in self.pokemon:
+            self.active_pokemon = other
+            print(f"{self.name} switched to {self.active_pokemon.name}")
+        else:
+            print(f"Pokemon is not available. Available Pokémon: {self.see_pokemon()}")
+        
+
+    # checks if a healing potion is in the dictionary and if so consumes it on the active pokemon    
+      
+    def heal_pokemon(self, potion):
+        if potion in self.potions:
+            potion_value = self.potions[potion]
+            self.active_pokemon = self.active_pokemon.heal(potion_value)
+            self.potions.pop(potion)
+            print(f"{potion} has been used. Remaining potions: {self.potions}")
+        else:
+            print(f"{potion} is not in inventory. Inventory: {self.potions}")
+
+    # calls the attack method of the active pokemon on the other trainer's active pokemon
+
+    def attack_pokemon(self, other):
+        self.active_pokemon.attack(other.active_pokemon)
+        
 
 
 test_pokemon = Pokemon('Twan', 5, 'fire')
@@ -111,14 +167,35 @@ test_pokemon2 = Pokemon('Peter', 5, 'grass')
 #test_pokemon.take_hit(10, 'fire')
 #test_pokemon.revive()
 
-test_pokemon.attack(test_pokemon2)
-test_pokemon.attack(test_pokemon2)
-test_pokemon2.attack(test_pokemon)
-test_pokemon.attack(test_pokemon2)
-test_pokemon2.heal(10)
-test_pokemon2.revenge(test_pokemon)
-print(test_pokemon2)
-test_pokemon2.attack(test_pokemon)
-test_pokemon2.attack(test_pokemon)
-test_pokemon2.attack(test_pokemon)
-test_pokemon.revenge(test_pokemon2)
+#test_pokemon.attack(test_pokemon2)
+#est_pokemon.attack(test_pokemon2)
+#test_pokemon2.attack(test_pokemon)
+#test_pokemon.attack(test_pokemon2)
+#test_pokemon2.heal(10)
+#test_pokemon2.revenge(test_pokemon)
+#print(test_pokemon2)
+#test_pokemon2.attack(test_pokemon)
+#test_pokemon2.attack(test_pokemon)
+#test_pokemon2.attack(test_pokemon)
+#test_pokemon.revenge(test_pokemon2)
+
+charmander = Pokemon('Charmander', 1, 'fire')
+bulbasaur = Pokemon('Bulbasaur', 1, 'grass')
+squirtle = Pokemon('Squirtle', 1, 'water')
+
+
+
+test_trainer = Trainer('Twan', [charmander, squirtle], {'Pineapple Pizza': 15})
+test_trainer2 = Trainer('Peter', [bulbasaur], {'Fat Tony': 15})
+
+test_trainer.attack_pokemon(test_trainer2)
+
+#charmander.take_hit(10, 'water')
+test_trainer.heal_pokemon('Fat Tony')
+test_trainer.switch_active(squirtle)
+test_trainer.see_pokemon()
+test_trainer.attack_pokemon(test_trainer2)
+test_trainer.switch_active(charmander)
+test_trainer.attack_pokemon(test_trainer2)
+test_trainer.attack_pokemon(test_trainer2)
+print(charmander)
